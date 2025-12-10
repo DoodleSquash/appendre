@@ -1,39 +1,35 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Layout from '@/Layout';
+import Home from '@/pages/Home';
+import Login from '@/pages/Login';
+import Dashboard from '@/pages/Dashboard';
+import CreateQuiz from '@/pages/CreateQuiz';
+import Explore from '@/pages/Explore';
+import JoinGame from '@/pages/JoinGame';
+import Play from '@/pages/Play';
+import PlaySolo from '@/pages/PlaySolo';
+import HostGame from '@/pages/HostGame';
+import Analytics from '@/pages/Analytics';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <div className="text-4xl text-blue-500 font-bold p-4">
-  Tailwind is working 🎉
-</div>
-
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route element={<Layout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/create-quiz" element={<CreateQuiz />} />
+          <Route path="/explore" element={<Explore />} />
+          <Route path="/join-game" element={<JoinGame />} />
+          <Route path="/play" element={<Play />} />
+          <Route path="/play-solo" element={<PlaySolo />} />
+          <Route path="/host-game" element={<HostGame />} />
+          <Route path="/analytics" element={<Analytics />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;

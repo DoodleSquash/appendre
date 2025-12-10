@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Optional global variables */
+:root {
+  --primary-color: #646cff;
+  --sidebar-width: 220px;
+}
