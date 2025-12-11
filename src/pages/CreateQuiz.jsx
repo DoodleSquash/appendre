@@ -213,11 +213,11 @@ export default function CreateQuiz() {
       <main className="max-w-5xl mx-auto px-6 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2 mb-8">
-            <TabsTrigger value="ai" className="gap-2">
-              <Sparkles className="w-4 h-4" /> AI Generator
+            <TabsTrigger value="ai">
+              AI Generator
             </TabsTrigger>
-            <TabsTrigger value="manual" className="gap-2">
-              <Plus className="w-4 h-4" /> Manual Editor
+            <TabsTrigger value="manual">
+              Manual Editor
             </TabsTrigger>
           </TabsList>
 

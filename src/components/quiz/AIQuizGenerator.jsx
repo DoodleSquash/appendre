@@ -89,9 +89,9 @@ export default function AIQuizGenerator({ onQuizGenerated }) {
     if (activeTab === 'pdf') return file !== null;
     return false;
   };
-  
+
   return (
-    <motion.div 
+    <motion.div
       className="bg-white rounded-2xl shadow-xl p-6 md:p-8"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -105,20 +105,20 @@ export default function AIQuizGenerator({ onQuizGenerated }) {
           <p className="text-slate-500">Create quizzes in seconds with AI</p>
         </div>
       </div>
-      
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
         <TabsList className="grid grid-cols-3 w-full">
-          <TabsTrigger value="topic" className="gap-2">
-            <Zap className="w-4 h-4" /> Topic
+          <TabsTrigger value="topic">
+            Topic
           </TabsTrigger>
-          <TabsTrigger value="text" className="gap-2">
-            <FileText className="w-4 h-4" /> Text
+          <TabsTrigger value="text">
+            Text
           </TabsTrigger>
-          <TabsTrigger value="pdf" className="gap-2">
-            <Upload className="w-4 h-4" /> PDF
+          <TabsTrigger value="pdf">
+            PDF
           </TabsTrigger>
         </TabsList>
-        
+
         <div className="mt-6">
           <TabsContent value="topic" className="m-0">
             <div className="space-y-4">
@@ -134,7 +134,7 @@ export default function AIQuizGenerator({ onQuizGenerated }) {
               </div>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="text" className="m-0">
             <div className="space-y-4">
               <div>
@@ -152,7 +152,7 @@ export default function AIQuizGenerator({ onQuizGenerated }) {
               </div>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="pdf" className="m-0">
             <div className="space-y-4">
               <div>
@@ -186,7 +186,7 @@ export default function AIQuizGenerator({ onQuizGenerated }) {
           </TabsContent>
         </div>
       </Tabs>
-      
+
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div>
           <Label>Number of Questions</Label>
@@ -202,7 +202,7 @@ export default function AIQuizGenerator({ onQuizGenerated }) {
             </SelectContent>
           </Select>
         </div>
-        
+
         <div>
           <Label>Difficulty</Label>
           <Select value={difficulty} onValueChange={setDifficulty}>
@@ -218,8 +218,8 @@ export default function AIQuizGenerator({ onQuizGenerated }) {
           </Select>
         </div>
       </div>
-      
-      <Button 
+
+      <Button
         onClick={generateQuiz}
         disabled={!canGenerate() || isGenerating}
         className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white py-6 text-lg font-semibold gap-3"
