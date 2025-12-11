@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getQuizById, createQuiz, updateQuiz } from '@/services/quizService';
 import { generateQuizWithAI } from '@/lib/api/quizApi';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import AIQuizGenerator from '@/components/quiz/AIQuizGenerator';
 import { createPageUrl } from '@/utils';
 import { toast } from 'sonner';
@@ -30,6 +30,7 @@ const defaultQuestion = {
 };
 
 export default function CreateQuiz() {
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('ai');
   const [quiz, setQuiz] = useState({
     title: '',
@@ -69,6 +70,8 @@ export default function CreateQuiz() {
       }
     },
     onSuccess: (result) => {
+      // Ensure dashboard picks up latest quizzes immediately
+      queryClient.invalidateQueries({ queryKey: ['myQuizzes'] });
       toast.success(editId ? 'Quiz updated!' : 'Quiz created!');
       window.location.href = createPageUrl('Dashboard');
     },
@@ -452,6 +455,7 @@ export default function CreateQuiz() {
                                                     updateOption(qIndex, oIndex, e.target.value);
                                                   }}
                                                   onClick={(e) => e.stopPropagation()}
+                                                  onFocus={() => updateQuestion(qIndex, 'correct_answer', oIndex)}
                                                   className="border-0 focus-visible:ring-0"
                                                 />
                                                 {question.correct_answer === oIndex && (

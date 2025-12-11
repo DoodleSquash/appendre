@@ -64,12 +64,12 @@ export default function QuizCard({ quiz, onPlay, onEdit, onDelete, isOwner }) {
         
         {/* Actions Menu */}
         {isOwner && (
-          <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="absolute top-3 right-3 transition-opacity">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button size="icon" variant="secondary" className="h-8 w-8 bg-white/90">
-                  <MoreVertical className="w-4 h-4" />
-                </Button>
+                <button className="h-8 w-8 bg-white/90 hover:bg-white rounded-lg flex items-center justify-center transition-colors shadow-sm">
+                  <MoreVertical className="w-4 h-4 text-slate-700" />
+                </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem asChild>

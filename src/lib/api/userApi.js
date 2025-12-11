@@ -38,8 +38,33 @@ export async function logoutUser() {
 }
 
 export async function getCurrentUser() {
-  const user = auth.currentUser;
+  // If already available, return immediately
+  const current = auth.currentUser;
+  if (current) {
+    await current.reload();
+    return {
+      uid: current.uid,
+      email: current.email,
+      full_name: current.displayName || current.email?.split('@')[0]
+    };
+  }
+
+  // Wait for Firebase to finish initializing auth state (first onAuthStateChanged tick)
+  const user = await new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      unsubscribe();
+      reject(new Error('Not authenticated'));
+    }, 2000);
+
+    const unsubscribe = onAuthStateChanged(auth, (u) => {
+      clearTimeout(timeout);
+      unsubscribe();
+      resolve(u || null);
+    });
+  });
+
   if (!user) throw new Error('Not authenticated');
+
   await user.reload();
   return {
     uid: user.uid,

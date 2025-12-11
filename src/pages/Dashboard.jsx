@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Plus, Search, Filter, Play, Sparkles, BarChart3,
-  Users, Clock, Loader2, Grid3X3, List
+import { 
+  Plus, Search, Filter, Play, Sparkles, BarChart3, 
+  Users, Clock, Loader2, Grid3X3, List 
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,11 +32,11 @@ export default function Dashboard() {
   const [viewMode, setViewMode] = useState('grid');
   const [deleteQuiz, setDeleteQuiz] = useState(null);
   const queryClient = useQueryClient();
-
+  
   useEffect(() => {
     loadUser();
   }, []);
-
+  
   const loadUser = async () => {
     try {
       const userData = await getCurrentUser();
@@ -45,7 +45,7 @@ export default function Dashboard() {
       redirectToLogin();
     }
   };
-
+  
   const { data: quizzes = [], isLoading } = useQuery({
     queryKey: ['myQuizzes'],
     queryFn: async () => {
@@ -54,7 +54,7 @@ export default function Dashboard() {
     },
     enabled: !!user
   });
-
+  
   const { data: results = [] } = useQuery({
     queryKey: ['myResults'],
     queryFn: async () => {
@@ -63,7 +63,7 @@ export default function Dashboard() {
     },
     enabled: !!user
   });
-
+  
   const deleteMutation = useMutation({
     mutationFn: (quizId) => deleteQuiz(quizId),
     onSuccess: () => {
@@ -72,29 +72,29 @@ export default function Dashboard() {
       setDeleteQuiz(null);
     }
   });
-
+  
   const handlePlayQuiz = (quiz) => {
     window.location.href = createPageUrl(`HostGame?quizId=${quiz.id}`);
   };
-
+  
   const handleEditQuiz = (quiz) => {
     window.location.href = createPageUrl(`CreateQuiz?editId=${quiz.id}`);
   };
-
-  const filteredQuizzes = quizzes.filter(quiz =>
+  
+  const filteredQuizzes = quizzes.filter(quiz => 
     quiz.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     quiz.description?.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
+  
   const stats = {
     totalQuizzes: quizzes.length,
     totalPlays: quizzes.reduce((acc, q) => acc + (q.play_count || 0), 0),
     gamesPlayed: results.length,
-    avgScore: results.length > 0
-      ? Math.round(results.reduce((acc, r) => acc + (r.accuracy_percentage || 0), 0) / results.length)
+    avgScore: results.length > 0 
+      ? Math.round(results.reduce((acc, r) => acc + (r.accuracy_percentage || 0), 0) / results.length) 
       : 0
   };
-
+  
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -102,7 +102,7 @@ export default function Dashboard() {
       </div>
     );
   }
-
+  
   return (
     <div className="min-h-screen bg-slate-50 pb-12">
       {/* Header */}
@@ -119,7 +119,7 @@ export default function Dashboard() {
           </Link>
         </div>
       </header>
-
+      
       <main className="max-w-7xl mx-auto px-6 py-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -144,11 +144,11 @@ export default function Dashboard() {
             </motion.div>
           ))}
         </div>
-
+        
         {/* Quick Actions */}
         <div className="grid md:grid-cols-2 gap-4 mb-8">
           <Link to={createPageUrl('JoinGame')}>
-            <motion.div
+            <motion.div 
               className="bg-gradient-to-r from-violet-600 to-fuchsia-600 rounded-2xl p-6 text-white cursor-pointer hover:shadow-xl transition-shadow"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -158,9 +158,9 @@ export default function Dashboard() {
               <p className="text-white/80">Enter a game PIN to play with others</p>
             </motion.div>
           </Link>
-
+          
           <Link to={createPageUrl('Explore')}>
-            <motion.div
+            <motion.div 
               className="bg-white rounded-2xl p-6 border border-slate-200 cursor-pointer hover:shadow-xl transition-shadow"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -171,12 +171,12 @@ export default function Dashboard() {
             </motion.div>
           </Link>
         </div>
-
+        
         {/* My Quizzes Section */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <h2 className="text-xl font-bold text-slate-800">My Quizzes</h2>
-
+            
             <div className="flex items-center gap-3">
               <div className="relative flex-1 md:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
@@ -187,28 +187,32 @@ export default function Dashboard() {
                   className="pl-10"
                 />
               </div>
-
-              <div className="flex bg-slate-100 rounded-lg p-1">
-                <Button
-                  size="icon"
-                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                  className="h-8 w-8"
+              
+              <div className="flex bg-slate-100 rounded-lg p-1 gap-1">
+                <button
+                  className={`h-8 w-8 rounded-md flex items-center justify-center transition-all ${
+                    viewMode === 'grid' 
+                      ? 'bg-white shadow-sm text-slate-900' 
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
                   onClick={() => setViewMode('grid')}
                 >
                   <Grid3X3 className="w-4 h-4" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant={viewMode === 'list' ? 'default' : 'ghost'}
-                  className="h-8 w-8"
+                </button>
+                <button
+                  className={`h-8 w-8 rounded-md flex items-center justify-center transition-all ${
+                    viewMode === 'list' 
+                      ? 'bg-white shadow-sm text-slate-900' 
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
                   onClick={() => setViewMode('list')}
                 >
                   <List className="w-4 h-4" />
-                </Button>
+                </button>
               </div>
             </div>
           </div>
-
+          
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-violet-600" />
@@ -220,8 +224,8 @@ export default function Dashboard() {
                 {searchQuery ? 'No quizzes found' : 'Create your first quiz'}
               </h3>
               <p className="text-slate-500 mb-6">
-                {searchQuery
-                  ? 'Try a different search term'
+                {searchQuery 
+                  ? 'Try a different search term' 
                   : 'Use AI to generate quizzes in seconds'}
               </p>
               {!searchQuery && (
@@ -233,8 +237,8 @@ export default function Dashboard() {
               )}
             </div>
           ) : (
-            <div className={viewMode === 'grid'
-              ? 'grid md:grid-cols-2 lg:grid-cols-3 gap-6'
+            <div className={viewMode === 'grid' 
+              ? 'grid md:grid-cols-2 lg:grid-cols-3 gap-6' 
               : 'space-y-4'
             }>
               <AnimatePresence mode="popLayout">
@@ -253,7 +257,7 @@ export default function Dashboard() {
           )}
         </div>
       </main>
-
+      
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deleteQuiz} onOpenChange={() => setDeleteQuiz(null)}>
         <AlertDialogContent>

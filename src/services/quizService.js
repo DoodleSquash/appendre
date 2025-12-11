@@ -105,20 +105,28 @@ export async function createQuiz(quizData) {
 export async function getUserQuizzes(userId) {
     try {
         const quizzesRef = collection(firestore, 'quizzes');
+        // Avoid composite index requirement by removing server-side orderBy
+        // We'll sort client-side by createdAt desc
         const q = query(
             quizzesRef,
-            where('createdBy', '==', userId),
-            orderBy('createdAt', 'desc')
+            where('createdBy', '==', userId)
         );
 
         const querySnapshot = await getDocs(q);
         const quizzes = [];
 
-        querySnapshot.forEach((doc) => {
+        querySnapshot.forEach((docSnap) => {
             quizzes.push({
-                id: doc.id,
-                ...doc.data()
+                id: docSnap.id,
+                ...docSnap.data()
             });
+        });
+
+        // Sort by createdAt desc on the client
+        quizzes.sort((a, b) => {
+            const ams = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+            const bms = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+            return bms - ams;
         });
 
         return quizzes;
@@ -251,10 +259,10 @@ export async function deleteQuiz(quizId) {
 export async function getPublicQuizzes() {
     try {
         const quizzesRef = collection(firestore, 'quizzes');
+        // Avoid composite index requirement by removing server-side orderBy
         const q = query(
             quizzesRef,
-            where('is_public', '==', true),
-            orderBy('createdAt', 'desc')
+            where('is_public', '==', true)
         );
 
         const querySnapshot = await getDocs(q);
@@ -265,6 +273,13 @@ export async function getPublicQuizzes() {
                 id: doc.id,
                 ...doc.data()
             });
+        });
+
+        // Sort by createdAt desc on the client
+        quizzes.sort((a, b) => {
+            const ams = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+            const bms = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+            return bms - ams;
         });
 
         return quizzes;
