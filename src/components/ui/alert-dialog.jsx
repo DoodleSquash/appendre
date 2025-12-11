@@ -1,7 +1,7 @@
 import React from 'react';
 
-export function AlertDialog({ children }) {
-  return <div>{children}</div>;
+export function AlertDialog({ children, open, onOpenChange }) {
+  return React.cloneElement(children, { open, onOpenChange });
 }
 
 export function AlertDialogTrigger({ children, onClick }) {
@@ -14,10 +14,10 @@ export function AlertDialogContent({ children, open, onOpenChange }) {
   return (
     <>
       <div
-        className="fixed inset-0 bg-black/50 z-40"
+        className="fixed inset-0 bg-black/50 z-[100]"
         onClick={() => onOpenChange?.(false)}
       />
-      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl z-50 max-w-sm w-full mx-4 p-6">
+      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl z-[101] max-w-sm w-full mx-4 p-6">
         {children}
       </div>
     </>

@@ -54,6 +54,7 @@ function validateQuizData(data) {
 export async function createQuiz(quizData) {
     // Check authentication
     const user = auth.currentUser;
+
     if (!user) {
         throw new Error('You must be logged in to create a quiz');
     }
@@ -148,7 +149,7 @@ export async function getQuizById(quizId) {
         }
 
         const data = quizSnap.data();
-        
+
         // Map Firestore storage format back to UI format for CreateQuiz editor
         return {
             id: quizSnap.id,
@@ -239,6 +240,7 @@ export async function updateQuiz(quizId, quizData) {
 export async function deleteQuiz(quizId) {
     // Check authentication
     const user = auth.currentUser;
+
     if (!user) {
         throw new Error('You must be logged in to delete a quiz');
     }
@@ -248,11 +250,14 @@ export async function deleteQuiz(quizId) {
 
         // Check if quiz exists and user owns it
         const quizSnap = await getDoc(quizRef);
+
         if (!quizSnap.exists()) {
             throw new Error('Quiz not found');
         }
 
-        if (quizSnap.data().createdBy !== user.uid) {
+        const quizData = quizSnap.data();
+
+        if (quizData.createdBy !== user.uid) {
             throw new Error('You do not have permission to delete this quiz');
         }
 

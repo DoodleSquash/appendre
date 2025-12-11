@@ -14,14 +14,14 @@ service cloud.firestore {
     }
 
     match /quizzes/{quizId} {
-      allow read: if resource.data.is_public == true || isOwner(resource.data.ownerUid);
-      allow create: if isSignedIn() && request.resource.data.ownerUid == request.auth.uid;
-      allow update, delete: if isOwner(resource.data.ownerUid);
+      allow read: if resource.data.is_public == true || isOwner(resource.data.createdBy);
+      allow create: if isSignedIn() && request.resource.data.createdBy == request.auth.uid;
+      allow update, delete: if isOwner(resource.data.createdBy);
 
       match /questions/{questionId} {
         allow read: if get(/databases/$(database)/documents/quizzes/$(quizId)).data.is_public == true
-          || isOwner(get(/databases/$(database)/documents/quizzes/$(quizId)).data.ownerUid);
-        allow create, update, delete: if isOwner(get(/databases/$(database)/documents/quizzes/$(quizId)).data.ownerUid);
+          || isOwner(get(/databases/$(database)/documents/quizzes/$(quizId)).data.createdBy);
+        allow create, update, delete: if isOwner(get(/databases/$(database)/documents/quizzes/$(quizId)).data.createdBy);
       }
     }
 
