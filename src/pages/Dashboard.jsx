@@ -74,11 +74,11 @@ export default function Dashboard() {
   });
   
   const handlePlayQuiz = (quiz) => {
-    window.location.href = createPageUrl(`HostGame?quizId=${quiz.id}`);
+    window.location.href = `${createPageUrl('HostGame')}?quizId=${quiz.id}`;
   };
   
   const handleEditQuiz = (quiz) => {
-    window.location.href = createPageUrl(`CreateQuiz?editId=${quiz.id}`);
+    window.location.href = `${createPageUrl('CreateQuiz')}?editId=${quiz.id}`;
   };
   
   const filteredQuizzes = quizzes.filter(quiz => 

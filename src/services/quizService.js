@@ -76,12 +76,9 @@ export async function createQuiz(quizData) {
             time_per_question: quizData.time_per_question || 20,
             questions: quizData.questions.map((q, index) => ({
                 id: q.id || `q_${index + 1}`,
-                question: q.question,
-                type: q.type || 'multiple_choice',
+                text: q.question,
                 options: q.options,
-                correct_answer: q.correct_answer,
-                time_limit: q.time_limit || quizData.time_per_question || 20,
-                points: q.points || 1000
+                correctIndex: q.correct_answer,
             }))
         };
 
@@ -150,9 +147,26 @@ export async function getQuizById(quizId) {
             throw new Error('Quiz not found');
         }
 
+        const data = quizSnap.data();
+        
+        // Map Firestore storage format back to UI format for CreateQuiz editor
         return {
             id: quizSnap.id,
-            ...quizSnap.data()
+            title: data.title || '',
+            description: data.description || '',
+            difficulty: data.difficulty || 'medium',
+            category: data.category || 'general',
+            is_public: data.is_public || false,
+            time_per_question: data.time_per_question || 20,
+            questions: (data.questions || []).map((q) => ({
+                id: q.id,
+                question: q.text || q.question || '',
+                type: q.type || 'multiple_choice',
+                options: q.options || [],
+                correct_answer: typeof q.correctIndex === 'number' ? q.correctIndex : (q.correct_answer || 0),
+                time_limit: q.time_limit || data.time_per_question || 20,
+                points: q.points || 1000
+            }))
         };
     } catch (error) {
         console.error('Error fetching quiz:', error);
@@ -199,12 +213,9 @@ export async function updateQuiz(quizId, quizData) {
             time_per_question: quizData.time_per_question || 20,
             questions: quizData.questions.map((q, index) => ({
                 id: q.id || `q_${index + 1}`,
-                question: q.question,
-                type: q.type || 'multiple_choice',
+                text: q.question,
                 options: q.options,
-                correct_answer: q.correct_answer,
-                time_limit: q.time_limit || quizData.time_per_question || 20,
-                points: q.points || 1000
+                correctIndex: q.correct_answer,
             }))
         };
 

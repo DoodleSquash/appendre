@@ -48,10 +48,14 @@ export default function CreateQuiz() {
   const urlParams = new URLSearchParams(window.location.search);
   const editId = urlParams.get('editId');
 
-  const { data: existingQuiz, isLoading: loadingQuiz } = useQuery({
+  const { data: existingQuiz, isLoading: loadingQuiz, error: loadError } = useQuery({
     queryKey: ['quiz', editId],
-    queryFn: () => getQuizById(editId),
-    enabled: !!editId
+    queryFn: async () => {
+      const result = await getQuizById(editId);
+      return result;
+    },
+    enabled: !!editId,
+    retry: false
   });
 
   useEffect(() => {
