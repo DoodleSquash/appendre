@@ -77,7 +77,7 @@ export default function PlaySolo() {
   const saveResultMutation = useMutation({
     mutationFn: async (resultData) => {
       if (user?.email !== 'guest') {
-        return saveQuizResult(resultData);
+        return saveQuizResult(quizId, resultData);
       }
     }
   });

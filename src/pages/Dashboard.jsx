@@ -49,9 +49,9 @@ export default function Dashboard() {
   const { data: quizzes = [], isLoading } = useQuery({
     queryKey: ['myQuizzes'],
     queryFn: async () => {
-      const allQuizzes = await fetchQuizzes();
       const userData = await getCurrentUser();
-      return allQuizzes.filter(q => q.created_by === userData.email);
+      const { items } = await fetchQuizzes({ owner: 'me' });
+      return items.filter(q => q.created_by === userData.email);
     },
     enabled: !!user
   });
@@ -60,7 +60,7 @@ export default function Dashboard() {
     queryKey: ['myResults'],
     queryFn: async () => {
       const userData = await getCurrentUser();
-      return fetchUserResults(userData.email, { limit: 10 });
+      return fetchUserResults(userData.uid, { limit: 10 });
     },
     enabled: !!user
   });

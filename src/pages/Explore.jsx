@@ -36,8 +36,8 @@ export default function Explore() {
   const { data: quizzes = [], isLoading } = useQuery({
     queryKey: ['publicQuizzes'],
     queryFn: async () => {
-      const allQuizzes = await fetchQuizzes();
-      return allQuizzes;
+      const { items } = await fetchQuizzes({ public: 1 });
+      return items;
     }
   });
   

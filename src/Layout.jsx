@@ -17,6 +17,7 @@ import { getCurrentUser, logoutUser, redirectToLogin } from '@/lib/api/userApi';
 import Logo from '@/components/ui/Logo';
 import { createPageUrl } from '@/utils';
 import { Toaster } from 'sonner';
+import { redirectToLogin } from '@/lib/api/userApi';
 
 // Paths without the navbar layout (hero pages, gameplay)
 const noLayoutPaths = ['/', '/play', '/host-game', '/join-game'];

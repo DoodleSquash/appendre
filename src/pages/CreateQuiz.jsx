@@ -53,8 +53,8 @@ export default function CreateQuiz() {
   });
   
   useEffect(() => {
-    if (existingQuiz?.[0]) {
-      setQuiz(existingQuiz[0]);
+    if (existingQuiz) {
+      setQuiz(existingQuiz);
       setActiveTab('manual');
     }
   }, [existingQuiz]);

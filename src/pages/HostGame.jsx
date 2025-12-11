@@ -156,7 +156,7 @@ export default function HostGame() {
       
       for (let i = 0; i < sortedPlayers.length; i++) {
         const player = sortedPlayers[i];
-        await saveQuizResult({
+        await saveQuizResult(quizId, {
           session_id: session.id,
           quiz_id: quizId,
           player_email: player.email,

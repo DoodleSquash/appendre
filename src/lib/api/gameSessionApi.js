@@ -1,151 +1,58 @@
-/**
- * Game Session API - Mock/Placeholder Functions
- * Frontend-only implementation for development
- * Replace with real API calls when backend is ready
- */
+import { fetchWithAuth } from './client';
+import { db } from '@/firebase';
+import { doc, collection, onSnapshot, orderBy, query } from 'firebase/firestore';
 
-// Mock sessions storage
-const mockSessions = {};
-
-/**
- * Generate unique game code
- * @returns {string}
- */
-function generateGameCode() {
-  return Math.random().toString(36).substring(2, 8).toUpperCase();
-}
-
-/**
- * Create game session
- * @param {Object} data
- * @returns {Promise<Object>}
- */
 export async function createGameSession(data) {
-  await new Promise(resolve => setTimeout(resolve, 300));
-  
-  const gameCode = generateGameCode();
-  const session = {
-    id: `session_${Date.now()}`,
-    quiz_id: data.quiz_id,
-    host_email: data.host_email || 'user@example.com',
-    game_code: gameCode,
-    status: 'waiting',
-    current_question_index: 0,
-    question_start_time: null,
-    players: [],
-    settings: data.settings || {
-      show_answers: true,
-      shuffle_questions: false,
-      shuffle_options: true
-    },
-    created_date: new Date().toISOString()
-  };
-  
-  mockSessions[session.id] = session;
-  mockSessions[gameCode] = session;
-  
-  return session;
+  return fetchWithAuth('/sessions', { method: 'POST', body: data });
 }
 
-/**
- * Fetch game session by ID or code
- * @param {string} idOrCode
- * @returns {Promise<Object|null>}
- */
 export async function fetchGameSession(idOrCode) {
-  await new Promise(resolve => setTimeout(resolve, 200));
-  return mockSessions[idOrCode] || null;
+  return fetchWithAuth(`/sessions/${idOrCode}`, { method: 'GET' });
 }
 
-/**
- * Join game session
- * @param {string} gameCode
- * @param {Object} playerData
- * @returns {Promise<Object>}
- */
 export async function joinGameSession(gameCode, playerData) {
-  await new Promise(resolve => setTimeout(resolve, 300));
-  
-  const session = mockSessions[gameCode];
-  if (!session) {
-    throw new Error('Game session not found');
-  }
-  
-  const player = {
-    id: `player_${Date.now()}_${Math.random()}`,
-    name: playerData.name,
-    email: playerData.email || null,
-    score: 0,
-    answers: [],
-    joined_at: new Date().toISOString()
-  };
-  
-  session.players.push(player);
-  return { session, player };
+  return fetchWithAuth(`/sessions/code/${gameCode}/join`, { method: 'POST', body: playerData });
 }
 
-/**
- * Update game session
- * @param {string} id
- * @param {Object} data
- * @returns {Promise<Object>}
- */
 export async function updateGameSession(id, data) {
-  await new Promise(resolve => setTimeout(resolve, 200));
-  
-  const session = mockSessions[id];
-  if (session) {
-    Object.assign(session, data);
-    return session;
-  }
-  
-  return { id, ...data };
+  return fetchWithAuth(`/sessions/${id}`, { method: 'PATCH', body: data });
 }
 
-/**
- * Submit answer
- * @param {string} sessionId
- * @param {string} playerId
- * @param {Object} answerData
- * @returns {Promise<Object>}
- */
-export async function submitAnswer(sessionId, playerId, answerData) {
-  await new Promise(resolve => setTimeout(resolve, 200));
-  
-  const session = mockSessions[sessionId];
-  if (session) {
-    const player = session.players.find(p => p.id === playerId);
-    if (player) {
-      const isCorrect = true; // Mock: always correct
-      const points = 1000;
-      
-      player.answers.push({
-        ...answerData,
-        is_correct: isCorrect,
-        points
-      });
-      
-      player.score += points;
-      
-      return { is_correct: isCorrect, points, player_score: player.score };
-    }
-  }
-  
-  return { is_correct: true, points: 1000, player_score: 1000 };
+export async function submitAnswer(sessionId, answerData) {
+  return fetchWithAuth(`/sessions/${sessionId}/answer`, { method: 'POST', body: answerData });
 }
 
-/**
- * Get leaderboard
- * @param {string} sessionId
- * @returns {Promise<Array>}
- */
 export async function fetchLeaderboard(sessionId) {
-  await new Promise(resolve => setTimeout(resolve, 200));
-  
-  const session = mockSessions[sessionId];
-  if (session && session.players) {
-    return [...session.players].sort((a, b) => b.score - a.score);
-  }
-  
-  return [];
+  return fetchWithAuth(`/sessions/${sessionId}/leaderboard`, { method: 'GET' });
 }
+
+export function onSessionSnapshot(sessionId, callback) {
+  const ref = doc(db, 'sessions', sessionId);
+  return onSnapshot(ref, (snap) => {
+    if (!snap.exists()) {
+      callback(null);
+      return;
+    }
+    callback({ id: snap.id, ...snap.data() });
+  });
+}
+
+export function onLeaderboardSnapshot(sessionId, callback) {
+  const ref = collection(db, 'sessions', sessionId, 'players');
+  const q = query(ref, orderBy('score', 'desc'));
+  return onSnapshot(q, (snap) => {
+    const players = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    callback(players);
+  });
+}
+
+/**
+ * Usage:
+ * const session = await createGameSession({ quiz_id });
+ * await joinGameSession('ABC123', { name, email });
+ * const s = await fetchGameSession(session.id);
+ * await submitAnswer(session.id, { player_email, selected_answer, question_index, correct_answer, time_limit, time_left, base_points });
+ * const lb = await fetchLeaderboard(session.id);
+ * const unsub = onSessionSnapshot(session.id, (data) => console.log(data));
+ * const unsubLb = onLeaderboardSnapshot(session.id, (players) => console.log(players));
+ */
