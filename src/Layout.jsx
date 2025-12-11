@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { getCurrentUser, logoutUser, redirectToLogin } from '@/lib/api/userApi';
+import { observeAuthState } from '@/services/firebaseAuth';
 import Logo from '@/components/ui/Logo';
 import { createPageUrl } from '@/utils';
 import { Toaster } from 'sonner';
@@ -30,22 +31,18 @@ export default function Layout() {
   const isActive = (href) => path === createPageUrl(href);
 
   useEffect(() => {
-    checkAuth();
-  }, []);
+    // Listen for Firebase auth state changes
+    const unsubscribe = observeAuthState((authUser) => {
+      setUser(authUser);
+    });
 
-  const checkAuth = async () => {
-    try {
-      const userData = await getCurrentUser();
-      setUser(userData);
-    } catch {
-      setUser(null);
-    } finally {
-    }
-  };
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, []);
 
   const handleLogout = () => {
     logoutUser();
-    window.location.href = createPageUrl('Home');
+    window.location.href = '/';
   };
 
   // Skip navbar layout for specific paths

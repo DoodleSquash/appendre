@@ -15,11 +15,6 @@ app.use(express.urlencoded({ extended: true }));
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-// Auth profile
-app.post('/auth/profile', verifyFirebaseIdToken, (req, res) => {
-  res.json({ uid: req.user.uid, email: req.user.email, name: req.user.name });
-});
-
 // Quizzes
 app.get('/quizzes', verifyFirebaseIdToken, quizzes.listQuizzes);
 app.get('/quizzes/:id', verifyFirebaseIdToken, quizzes.getQuiz);

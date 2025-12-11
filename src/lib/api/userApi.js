@@ -57,7 +57,19 @@ export function onAuthChange(callback) {
 }
 
 export async function fetchProfile() {
-  return fetchWithAuth('/auth/profile', { method: 'POST' });
+  const user = auth.currentUser;
+  if (!user) throw new Error('Not authenticated');
+
+  // Get profile from Firestore
+  const { getUserProfile } = await import('@/services/firebaseAuth');
+  const profile = await getUserProfile(user.uid);
+
+  // Return profile or fallback to auth data
+  return profile || {
+    uid: user.uid,
+    email: user.email,
+    full_name: user.displayName || user.email?.split('@')[0]
+  };
 }
 
 export function isAuthenticated() {
