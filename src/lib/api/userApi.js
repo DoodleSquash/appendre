@@ -60,6 +60,10 @@ export async function fetchProfile() {
   return fetchWithAuth('/auth/profile', { method: 'POST' });
 }
 
+export function isAuthenticated() {
+  return auth.currentUser !== null;
+}
+
 export function redirectToLogin(redirectPath = '') {
   const loginUrl = redirectPath
     ? `/login?redirect=${encodeURIComponent(redirectPath)}`
@@ -76,10 +80,3 @@ export function redirectToLogin(redirectPath = '') {
  * await logoutUser();
  */
 
-
-// src/lib/api/userApi.js
-
-export function redirectToLogin(currentPath = window.location.pathname) {
-  const redirect = encodeURIComponent(currentPath);
-  window.location.href = `/login?redirect=${redirect}`;
-}

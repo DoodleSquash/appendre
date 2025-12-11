@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { 
-  Home, LayoutDashboard, Plus, Search, Play, LogOut, 
+import {
+  Home, LayoutDashboard, Plus, Search, Play, LogOut,
   User, Menu, X, ChevronDown, Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -17,7 +17,6 @@ import { getCurrentUser, logoutUser, redirectToLogin } from '@/lib/api/userApi';
 import Logo from '@/components/ui/Logo';
 import { createPageUrl } from '@/utils';
 import { Toaster } from 'sonner';
-import { redirectToLogin } from '@/lib/api/userApi';
 
 // Paths without the navbar layout (hero pages, gameplay)
 const noLayoutPaths = ['/', '/play', '/host-game', '/join-game'];
@@ -29,11 +28,11 @@ export default function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isActive = (href) => path === createPageUrl(href);
-  
+
   useEffect(() => {
     checkAuth();
   }, []);
-  
+
   const checkAuth = async () => {
     try {
       const userData = await getCurrentUser();
@@ -43,12 +42,12 @@ export default function Layout() {
     } finally {
     }
   };
-  
+
   const handleLogout = () => {
     logoutUser();
     window.location.href = createPageUrl('Home');
   };
-  
+
   // Skip navbar layout for specific paths
   if (noLayoutPaths.includes(path)) {
     return (
@@ -58,18 +57,18 @@ export default function Layout() {
       </>
     );
   }
-  
+
   const navItems = [
     { name: 'Dashboard', icon: LayoutDashboard, href: 'Dashboard' },
     { name: 'Create Quiz', icon: Plus, href: 'CreateQuiz' },
     { name: 'Explore', icon: Search, href: 'Explore' },
     { name: 'Join Game', icon: Play, href: 'JoinGame' },
   ];
-  
+
   return (
     <div className="min-h-screen bg-slate-50">
       <Toaster position="top-center" richColors />
-      
+
       {/* Desktop Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-lg border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-6 py-3">
@@ -78,12 +77,12 @@ export default function Layout() {
             <Link to={createPageUrl('Home')}>
               <Logo />
             </Link>
-            
+
             {/* Desktop Nav Items */}
             <div className="hidden md:flex items-center gap-1">
               {navItems.map((item) => (
                 <Link key={item.name} to={createPageUrl(item.href)}>
-                  <Button 
+                  <Button
                     variant={isActive(item.href) ? 'secondary' : 'ghost'}
                     className="gap-2"
                   >
@@ -93,7 +92,7 @@ export default function Layout() {
                 </Link>
               ))}
             </div>
-            
+
             {/* User Menu */}
             <div className="flex items-center gap-3">
               {user ? (
@@ -125,14 +124,14 @@ export default function Layout() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <Button 
+                <Button
                   onClick={() => redirectToLogin()}
                   className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700"
                 >
                   Sign In
                 </Button>
               )}
-              
+
               {/* Mobile Menu Button */}
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
                 <SheetTrigger asChild>
@@ -143,12 +142,12 @@ export default function Layout() {
                 <SheetContent side="right" className="w-72">
                   <div className="flex flex-col gap-2 mt-8">
                     {navItems.map((item) => (
-                      <Link 
-                        key={item.name} 
+                      <Link
+                        key={item.name}
                         to={createPageUrl(item.href)}
                         onClick={() => setMobileMenuOpen(false)}
                       >
-                        <Button 
+                        <Button
                           variant={isActive(item.href) ? 'secondary' : 'ghost'}
                           className="w-full justify-start gap-3"
                         >
@@ -157,12 +156,12 @@ export default function Layout() {
                         </Button>
                       </Link>
                     ))}
-                    
+
                     {user && (
                       <>
                         <div className="border-t border-slate-200 my-4" />
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           onClick={handleLogout}
                           className="w-full justify-start gap-3 text-red-600 hover:text-red-700 hover:bg-red-50"
                         >
@@ -178,7 +177,7 @@ export default function Layout() {
           </div>
         </div>
       </nav>
-      
+
       {/* Main Content with top padding for fixed nav */}
       <main className="pt-16">
         <Outlet />
