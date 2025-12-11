@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  ArrowLeft, Plus, Trash2, GripVertical, Save, Eye, 
+import {
+  ArrowLeft, Plus, Trash2, GripVertical, Save, Eye,
   Sparkles, Clock, Award, ChevronDown, ChevronUp,
   Play, Loader2, Image as ImageIcon
 } from 'lucide-react';
@@ -12,7 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { fetchQuizById, createQuiz, updateQuiz, generateQuizWithAI } from '@/lib/api/quizApi';
+import { getQuizById, createQuiz, updateQuiz } from '@/services/quizService';
+import { generateQuizWithAI } from '@/lib/api/quizApi';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import AIQuizGenerator from '@/components/quiz/AIQuizGenerator';
 import { createPageUrl } from '@/utils';
@@ -41,24 +42,24 @@ export default function CreateQuiz() {
   });
   const [expandedQuestion, setExpandedQuestion] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
-  
+
   // Check for edit mode
   const urlParams = new URLSearchParams(window.location.search);
   const editId = urlParams.get('editId');
-  
+
   const { data: existingQuiz, isLoading: loadingQuiz } = useQuery({
     queryKey: ['quiz', editId],
-    queryFn: () => fetchQuizById(editId),
+    queryFn: () => getQuizById(editId),
     enabled: !!editId
   });
-  
+
   useEffect(() => {
     if (existingQuiz) {
       setQuiz(existingQuiz);
       setActiveTab('manual');
     }
   }, [existingQuiz]);
-  
+
   const saveMutation = useMutation({
     mutationFn: async (quizData) => {
       if (editId) {
@@ -76,7 +77,7 @@ export default function CreateQuiz() {
       setIsSaving(false);
     }
   });
-  
+
   const handleAIGenerated = (generatedQuiz) => {
     setQuiz({
       ...quiz,
@@ -85,11 +86,11 @@ export default function CreateQuiz() {
     setActiveTab('manual');
     setExpandedQuestion(0);
   };
-  
+
   const addQuestion = () => {
-    const newQuestion = { 
-      ...defaultQuestion, 
-      id: `q_${Date.now()}` 
+    const newQuestion = {
+      ...defaultQuestion,
+      id: `q_${Date.now()}`
     };
     setQuiz({
       ...quiz,
@@ -97,19 +98,19 @@ export default function CreateQuiz() {
     });
     setExpandedQuestion(quiz.questions.length);
   };
-  
+
   const updateQuestion = (index, field, value) => {
     const newQuestions = [...quiz.questions];
     newQuestions[index] = { ...newQuestions[index], [field]: value };
     setQuiz({ ...quiz, questions: newQuestions });
   };
-  
+
   const updateOption = (qIndex, oIndex, value) => {
     const newQuestions = [...quiz.questions];
     newQuestions[qIndex].options[oIndex] = value;
     setQuiz({ ...quiz, questions: newQuestions });
   };
-  
+
   const deleteQuestion = (index) => {
     const newQuestions = quiz.questions.filter((_, i) => i !== index);
     setQuiz({ ...quiz, questions: newQuestions });
@@ -117,17 +118,17 @@ export default function CreateQuiz() {
       setExpandedQuestion(Math.max(0, newQuestions.length - 1));
     }
   };
-  
+
   const handleDragEnd = (result) => {
     if (!result.destination) return;
-    
+
     const items = Array.from(quiz.questions);
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
-    
+
     setQuiz({ ...quiz, questions: items });
   };
-  
+
   const handleSave = () => {
     if (!quiz.title.trim()) {
       toast.error('Please add a title');
@@ -137,20 +138,20 @@ export default function CreateQuiz() {
       toast.error('Please add at least one question');
       return;
     }
-    
+
     const invalidQuestions = quiz.questions.filter(
       q => !q.question.trim() || q.options.some(o => !o.trim())
     );
-    
+
     if (invalidQuestions.length > 0) {
       toast.error('Please complete all questions and options');
       return;
     }
-    
+
     setIsSaving(true);
     saveMutation.mutate(quiz);
   };
-  
+
   if (loadingQuiz) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -158,15 +159,15 @@ export default function CreateQuiz() {
       </div>
     );
   }
-  
+
   return (
     <div className="min-h-screen bg-slate-50 pb-24">
       {/* Header */}
       <header className="bg-white border-b border-slate-100 sticky top-0 z-40">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="icon"
               onClick={() => window.location.href = createPageUrl('Dashboard')}
             >
@@ -181,12 +182,12 @@ export default function CreateQuiz() {
               </p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-3">
             <Button variant="outline" className="gap-2">
               <Eye className="w-4 h-4" /> Preview
             </Button>
-            <Button 
+            <Button
               onClick={handleSave}
               disabled={isSaving}
               className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 gap-2"
@@ -201,7 +202,7 @@ export default function CreateQuiz() {
           </div>
         </div>
       </header>
-      
+
       <main className="max-w-5xl mx-auto px-6 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2 mb-8">
@@ -212,20 +213,20 @@ export default function CreateQuiz() {
               <Plus className="w-4 h-4" /> Manual Editor
             </TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="ai" className="m-0">
             <AIQuizGenerator onQuizGenerated={handleAIGenerated} />
           </TabsContent>
-          
+
           <TabsContent value="manual" className="m-0">
             {/* Quiz Details */}
-            <motion.div 
+            <motion.div
               className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
               <h2 className="text-lg font-bold text-slate-800 mb-4">Quiz Details</h2>
-              
+
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
                   <Label>Title</Label>
@@ -236,7 +237,7 @@ export default function CreateQuiz() {
                     className="mt-2"
                   />
                 </div>
-                
+
                 <div className="md:col-span-2">
                   <Label>Description</Label>
                   <Textarea
@@ -246,11 +247,11 @@ export default function CreateQuiz() {
                     className="mt-2"
                   />
                 </div>
-                
+
                 <div>
                   <Label>Category</Label>
-                  <Select 
-                    value={quiz.category} 
+                  <Select
+                    value={quiz.category}
                     onValueChange={(v) => setQuiz({ ...quiz, category: v })}
                   >
                     <SelectTrigger className="mt-2">
@@ -269,11 +270,11 @@ export default function CreateQuiz() {
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div>
                   <Label>Difficulty</Label>
-                  <Select 
-                    value={quiz.difficulty} 
+                  <Select
+                    value={quiz.difficulty}
                     onValueChange={(v) => setQuiz({ ...quiz, difficulty: v })}
                   >
                     <SelectTrigger className="mt-2">
@@ -287,7 +288,7 @@ export default function CreateQuiz() {
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl md:col-span-2">
                   <div>
                     <Label>Make Public</Label>
@@ -300,7 +301,7 @@ export default function CreateQuiz() {
                 </div>
               </div>
             </motion.div>
-            
+
             {/* Questions List */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -309,7 +310,7 @@ export default function CreateQuiz() {
                   <Plus className="w-4 h-4" /> Add Question
                 </Button>
               </div>
-              
+
               <DragDropContext onDragEnd={handleDragEnd}>
                 <Droppable droppableId="questions">
                   {(provided) => (
@@ -324,23 +325,22 @@ export default function CreateQuiz() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -20 }}
-                                className={`bg-white rounded-2xl shadow-sm border ${
-                                  snapshot.isDragging ? 'border-violet-300 shadow-lg' : 'border-slate-100'
-                                }`}
+                                className={`bg-white rounded-2xl shadow-sm border ${snapshot.isDragging ? 'border-violet-300 shadow-lg' : 'border-slate-100'
+                                  }`}
                               >
                                 {/* Question Header */}
-                                <div 
+                                <div
                                   className="flex items-center gap-3 p-4 cursor-pointer"
                                   onClick={() => setExpandedQuestion(expandedQuestion === qIndex ? -1 : qIndex)}
                                 >
                                   <div {...provided.dragHandleProps} className="text-slate-400 hover:text-slate-600">
                                     <GripVertical className="w-5 h-5" />
                                   </div>
-                                  
+
                                   <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-violet-500 to-fuchsia-500 flex items-center justify-center text-white font-bold text-sm">
                                     {qIndex + 1}
                                   </div>
-                                  
+
                                   <div className="flex-1 min-w-0">
                                     <p className="font-medium text-slate-800 truncate">
                                       {question.question || 'New Question'}
@@ -349,7 +349,7 @@ export default function CreateQuiz() {
                                       {question.type === 'true_false' ? 'True/False' : 'Multiple Choice'} • {question.time_limit}s • {question.points} pts
                                     </p>
                                   </div>
-                                  
+
                                   <Button
                                     variant="ghost"
                                     size="icon"
@@ -361,14 +361,14 @@ export default function CreateQuiz() {
                                   >
                                     <Trash2 className="w-4 h-4" />
                                   </Button>
-                                  
+
                                   {expandedQuestion === qIndex ? (
                                     <ChevronUp className="w-5 h-5 text-slate-400" />
                                   ) : (
                                     <ChevronDown className="w-5 h-5 text-slate-400" />
                                   )}
                                 </div>
-                                
+
                                 {/* Question Content */}
                                 <AnimatePresence>
                                   {expandedQuestion === qIndex && (
@@ -388,11 +388,11 @@ export default function CreateQuiz() {
                                             className="mt-2"
                                           />
                                         </div>
-                                        
+
                                         <div className="grid grid-cols-3 gap-4">
                                           <div>
                                             <Label>Type</Label>
-                                            <Select 
+                                            <Select
                                               value={question.type}
                                               onValueChange={(v) => updateQuestion(qIndex, 'type', v)}
                                             >
@@ -405,7 +405,7 @@ export default function CreateQuiz() {
                                               </SelectContent>
                                             </Select>
                                           </div>
-                                          
+
                                           <div>
                                             <Label>Time (seconds)</Label>
                                             <Input
@@ -417,7 +417,7 @@ export default function CreateQuiz() {
                                               className="mt-2"
                                             />
                                           </div>
-                                          
+
                                           <div>
                                             <Label>Points</Label>
                                             <Input
@@ -430,19 +430,18 @@ export default function CreateQuiz() {
                                             />
                                           </div>
                                         </div>
-                                        
+
                                         <div>
                                           <Label>Answer Options</Label>
                                           <p className="text-sm text-slate-500 mb-2">Click to mark as correct answer</p>
                                           <div className="grid grid-cols-2 gap-3">
                                             {question.options.map((option, oIndex) => (
-                                              <div 
+                                              <div
                                                 key={oIndex}
-                                                className={`relative rounded-xl border-2 transition-all cursor-pointer ${
-                                                  question.correct_answer === oIndex 
-                                                    ? 'border-emerald-500 bg-emerald-50' 
-                                                    : 'border-slate-200 hover:border-slate-300'
-                                                }`}
+                                                className={`relative rounded-xl border-2 transition-all cursor-pointer ${question.correct_answer === oIndex
+                                                  ? 'border-emerald-500 bg-emerald-50'
+                                                  : 'border-slate-200 hover:border-slate-300'
+                                                  }`}
                                                 onClick={() => updateQuestion(qIndex, 'correct_answer', oIndex)}
                                               >
                                                 <Input
@@ -478,7 +477,7 @@ export default function CreateQuiz() {
                   )}
                 </Droppable>
               </DragDropContext>
-              
+
               {quiz.questions.length === 0 && (
                 <div className="text-center py-12 bg-white rounded-2xl border-2 border-dashed border-slate-200">
                   <Sparkles className="w-12 h-12 text-slate-300 mx-auto mb-4" />
