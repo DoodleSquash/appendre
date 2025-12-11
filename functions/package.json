@@ -1,0 +1,24 @@
+{
+  "name": "apprendre-backend",
+  "version": "1.0.0",
+  "description": "Firebase Functions backend for Apprendre (JavaScript)",
+  "main": "index.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "deploy": "firebase deploy --only functions,firestore,storage"
+  },
+  "dependencies": {
+    "@google-cloud/storage": "^7.10.1",
+    "axios": "^1.6.8",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "firebase-admin": "^12.0.0",
+    "firebase-functions": "^5.0.1",
+    "multer": "^1.4.5-lts.1",
+    "pdf-parse": "^1.1.1"
+  }
+}
+

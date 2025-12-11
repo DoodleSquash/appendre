@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Lock, Mail, ArrowRight } from 'lucide-react';
@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Logo from '@/components/ui/Logo';
 import { validateEmail } from '@/utils';
-import { loginUser } from '@/lib/api/userApi';
+import { login } from '@/services/firebaseAuth';
 import { toast } from 'sonner';
 
 function Login() {
@@ -14,10 +14,20 @@ function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [lastEmail, setLastEmail] = useState('');
+  const [showEmailSuggestion, setShowEmailSuggestion] = useState(false);
+
+  // Load last used email on component mount
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('lastLoginEmail');
+    if (savedEmail) {
+      setLastEmail(savedEmail);
+    }
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    
+
     if (!email || !password) {
       toast.error('Please fill in all fields');
       return;
@@ -29,13 +39,16 @@ function Login() {
     }
 
     setIsLoading(true);
-    
+
     try {
-      // Call backend login function
-      await loginUser(email, password);
-      
+      // Use Firebase Auth directly
+      await login(email, password);
+
+      // Save email to localStorage for next time
+      localStorage.setItem('lastLoginEmail', email);
+
       toast.success('Logged in successfully!');
-      
+
       // Navigate to dashboard or intended page
       const redirect = new URLSearchParams(window.location.search).get('redirect');
       navigate(redirect || '/dashboard');
@@ -44,6 +57,11 @@ function Login() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleEmailSuggestionClick = () => {
+    setEmail(lastEmail);
+    setShowEmailSuggestion(false);
   };
 
   return (
@@ -67,7 +85,7 @@ function Login() {
 
           <form onSubmit={handleLogin} className="space-y-4">
             {/* Email */}
-            <div>
+            <div className="relative">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Email Address
               </label>
@@ -78,9 +96,24 @@ function Login() {
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onFocus={() => lastEmail && !email && setShowEmailSuggestion(true)}
+                  onBlur={() => setTimeout(() => setShowEmailSuggestion(false), 200)}
                   className="pl-12"
                 />
               </div>
+              {/* Email suggestion dropdown */}
+              {showEmailSuggestion && lastEmail && !email && (
+                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg">
+                  <button
+                    type="button"
+                    onClick={handleEmailSuggestionClick}
+                    className="w-full px-4 py-3 text-left hover:bg-violet-50 rounded-lg transition-colors flex items-center gap-2"
+                  >
+                    <Mail className="w-4 h-4 text-violet-600" />
+                    <span className="text-sm text-gray-700">{lastEmail}</span>
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Password */}
@@ -111,21 +144,14 @@ function Login() {
             </Button>
           </form>
 
-          {/* Demo Info */}
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-sm text-blue-900">
-              <strong>Demo:</strong> Use any email and password to sign in
-            </p>
-          </div>
-
           {/* Sign Up Link */}
-          <p className="text-center text-gray-600 mt-6">
+          <p className="text-center text-gray-600 mt-8">
             Don't have an account?{' '}
             <button
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/signup')}
               className="text-violet-600 hover:text-violet-700 font-medium"
             >
-              Go back home
+              Sign up
             </button>
           </p>
         </div>

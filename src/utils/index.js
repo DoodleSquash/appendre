@@ -2,13 +2,18 @@
  * Create a page URL for navigation
  */
 export function createPageUrl(path) {
+  // Special case: Home maps to root path
+  if (path === 'Home') {
+    return '/';
+  }
+
   // Convert PascalCase page names to lowercase routes
   // e.g., "CreateQuiz" -> "/create-quiz", "Dashboard" -> "/dashboard"
   const routePath = path
     .replace(/([A-Z])/g, '-$1')
     .toLowerCase()
     .replace(/^-/, '');
-  
+
   return `/${routePath}`;
 }
 

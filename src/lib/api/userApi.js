@@ -1,84 +1,119 @@
-/**
- * User API - Mock/Placeholder Functions
- * Frontend-only implementation for development
- * Replace with real API calls when backend is ready
- */
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  updateProfile
+} from 'firebase/auth';
+import { auth } from '@/firebase';
+import { fetchWithAuth, getIdToken } from './client';
 
-let currentUser = null;
-
-/**
- * Check authentication status
- * @returns {Promise<boolean>}
- */
-export async function isAuthenticated() {
-  await new Promise(resolve => setTimeout(resolve, 100));
-  const token = localStorage.getItem('auth_token');
-  return !!token;
-}
-
-/**
- * Get current user
- * @returns {Promise<Object>}
- */
-export async function getCurrentUser() {
-  await new Promise(resolve => setTimeout(resolve, 100));
-  
-  if (currentUser) {
-    return currentUser;
-  }
-  
-  const storedUser = localStorage.getItem('user');
-  if (storedUser) {
-    currentUser = JSON.parse(storedUser);
-    return currentUser;
-  }
-  
-  throw new Error('Not authenticated');
-}
-
-/**
- * Login user
- * @param {string} email
- * @param {string} password
- * @returns {Promise<Object>}
- */
 export async function loginUser(email, password) {
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  const user = {
-    id: `user_${Date.now()}`,
-    email,
-    full_name: email.split('@')[0],
-    created_date: new Date().toISOString()
+  const cred = await signInWithEmailAndPassword(auth, email, password);
+  const token = await cred.user.getIdToken();
+  return {
+    uid: cred.user.uid,
+    email: cred.user.email,
+    full_name: cred.user.displayName || cred.user.email?.split('@')[0],
+    token
   };
-  
-  const token = `mock_token_${Date.now()}`;
-  localStorage.setItem('auth_token', token);
-  localStorage.setItem('user', JSON.stringify(user));
-  
-  currentUser = user;
-  return user;
 }
 
-/**
- * Logout user
- * @returns {Promise<void>}
- */
+export async function signupUser(email, password, displayName) {
+  const cred = await createUserWithEmailAndPassword(auth, email, password);
+  if (displayName) {
+    await updateProfile(cred.user, { displayName });
+  }
+  const token = await cred.user.getIdToken();
+  return {
+    uid: cred.user.uid,
+    email: cred.user.email,
+    full_name: displayName || cred.user.email?.split('@')[0],
+    token
+  };
+}
+
 export async function logoutUser() {
-  await new Promise(resolve => setTimeout(resolve, 100));
-  
-  localStorage.removeItem('auth_token');
-  localStorage.removeItem('user');
-  currentUser = null;
+  await signOut(auth);
 }
 
-/**
- * Redirect to login page
- * @param {string} redirectPath
- */
+export async function getCurrentUser() {
+  // If already available, return immediately
+  const current = auth.currentUser;
+  if (current) {
+    await current.reload();
+    return {
+      uid: current.uid,
+      email: current.email,
+      full_name: current.displayName || current.email?.split('@')[0]
+    };
+  }
+
+  // Wait for Firebase to finish initializing auth state (first onAuthStateChanged tick)
+  const user = await new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      unsubscribe();
+      reject(new Error('Not authenticated'));
+    }, 2000);
+
+    const unsubscribe = onAuthStateChanged(auth, (u) => {
+      clearTimeout(timeout);
+      unsubscribe();
+      resolve(u || null);
+    });
+  });
+
+  if (!user) throw new Error('Not authenticated');
+
+  await user.reload();
+  return {
+    uid: user.uid,
+    email: user.email,
+    full_name: user.displayName || user.email?.split('@')[0]
+  };
+}
+
+export async function getIdTokenCached(forceRefresh = false) {
+  return getIdToken(forceRefresh);
+}
+
+export function onAuthChange(callback) {
+  return onAuthStateChanged(auth, callback);
+}
+
+export async function fetchProfile() {
+  const user = auth.currentUser;
+  if (!user) throw new Error('Not authenticated');
+
+  // Get profile from Firestore
+  const { getUserProfile } = await import('@/services/firebaseAuth');
+  const profile = await getUserProfile(user.uid);
+
+  // Return profile or fallback to auth data
+  return profile || {
+    uid: user.uid,
+    email: user.email,
+    full_name: user.displayName || user.email?.split('@')[0]
+  };
+}
+
+export function isAuthenticated() {
+  return auth.currentUser !== null;
+}
+
 export function redirectToLogin(redirectPath = '') {
-  const loginUrl = redirectPath 
-    ? `/login?redirect=${encodeURIComponent(redirectPath)}` 
+  const loginUrl = redirectPath
+    ? `/login?redirect=${encodeURIComponent(redirectPath)}`
     : '/login';
   window.location.href = loginUrl;
 }
+
+/**
+ * Usage:
+ * await signupUser('a@b.com','pass','Name');
+ * await loginUser('a@b.com','pass');
+ * const profile = await fetchProfile();
+ * const token = await getIdTokenCached();
+ * await logoutUser();
+ */
+

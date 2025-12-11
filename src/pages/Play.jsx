@@ -159,7 +159,7 @@ export default function Play() {
     toast.success('Joined game!');
   };
   
-  const submitAnswer = async (answerIndex) => {
+  const submitAnswerAction = async (answerIndex) => {
     if (hasAnswered || !session || !quiz) return;
     
     setSelectedAnswer(answerIndex);
@@ -168,46 +168,26 @@ export default function Play() {
     const currentQ = quiz.questions[session.current_question_index];
     const isCorrect = answerIndex === currentQ.correct_answer;
     
-    // Calculate points based on time left
-    const timeBonus = Math.round((timeLeft / (currentQ.time_limit || 20)) * 500);
-    const basePoints = currentQ.points || 1000;
-    const pointsEarned = isCorrect ? Math.round(basePoints * 0.5 + timeBonus) : 0;
-    
-    // Update player in session
     const playerEmail = user?.email || session.players?.find(p => p.name === playerName)?.email;
-    const updatedPlayers = session.players.map(p => {
-      if (p.email === playerEmail || p.name === playerName) {
-        const newStreak = isCorrect ? (p.streak || 0) + 1 : 0;
-        const streakBonus = isCorrect && newStreak > 1 ? newStreak * 50 : 0;
-        
-        return {
-          ...p,
-          score: (p.score || 0) + pointsEarned + streakBonus,
-          streak: newStreak,
-          answers: [
-            ...(p.answers || []),
-            {
-              question_index: session.current_question_index,
-              selected_answer: answerIndex,
-              is_correct: isCorrect,
-              response_time: (currentQ.time_limit || 20) - timeLeft,
-              points_earned: pointsEarned + streakBonus
-            }
-          ]
-        };
-      }
-      return p;
+    const resp = await submitAnswer(session.id, {
+      player_email: playerEmail,
+      selected_answer: answerIndex,
+      question_index: session.current_question_index,
+      correct_answer: currentQ.correct_answer,
+      time_limit: currentQ.time_limit || 20,
+      time_left: timeLeft,
+      base_points: currentQ.points || 1000
     });
-    
-    await updateGameSession(session.id, {
-      players: updatedPlayers
-    });
-    
+
     setLastResult({
       isCorrect,
-      pointsEarned: pointsEarned + (isCorrect && (session.players.find(p => p.email === playerEmail)?.streak || 0) > 0 ? 50 : 0),
+      pointsEarned: resp.points,
       correctAnswer: currentQ.correct_answer
     });
+
+    // Refresh session snapshot to get updated scores
+    const updatedSession = await fetchGameSession(session.id);
+    if (updatedSession) setSession(updatedSession);
   };
   
   // Joining screen
@@ -376,7 +356,7 @@ export default function Play() {
           <QuestionCard
             question={currentQuestion}
             selectedAnswer={selectedAnswer}
-            onSelectAnswer={submitAnswer}
+            onSelectAnswer={submitAnswerAction}
             showResult={hasAnswered}
             correctAnswer={hasAnswered ? currentQuestion.correct_answer : null}
             disabled={hasAnswered}

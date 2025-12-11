@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Play, Users, Clock, Sparkles, MoreVertical, Edit, Trash2, BarChart3, User } from 'lucide-react';
@@ -32,6 +32,8 @@ const categoryIcons = {
 };
 
 export default function QuizCard({ quiz, onPlay, onEdit, onDelete, isOwner }) {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
   return (
     <motion.div
       className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all group"
@@ -42,9 +44,9 @@ export default function QuizCard({ quiz, onPlay, onEdit, onDelete, isOwner }) {
       {/* Cover Image */}
       <div className="relative h-40 bg-gradient-to-br from-violet-500 to-fuchsia-500 overflow-hidden">
         {quiz.cover_image ? (
-          <img 
-            src={quiz.cover_image} 
-            alt={quiz.title} 
+          <img
+            src={quiz.cover_image}
+            alt={quiz.title}
             className="w-full h-full object-cover"
           />
         ) : (
@@ -52,7 +54,7 @@ export default function QuizCard({ quiz, onPlay, onEdit, onDelete, isOwner }) {
             <span className="text-6xl">{categoryIcons[quiz.category] || '📝'}</span>
           </div>
         )}
-        
+
         {/* AI Badge */}
         {quiz.source_type?.startsWith('ai_') && (
           <div className="absolute top-3 left-3">
@@ -61,15 +63,15 @@ export default function QuizCard({ quiz, onPlay, onEdit, onDelete, isOwner }) {
             </Badge>
           </div>
         )}
-        
+
         {/* Actions Menu */}
         {isOwner && (
-          <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-            <DropdownMenu>
+          <div className="absolute top-3 right-3 transition-opacity">
+            <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
               <DropdownMenuTrigger asChild>
-                <Button size="icon" variant="secondary" className="h-8 w-8 bg-white/90">
-                  <MoreVertical className="w-4 h-4" />
-                </Button>
+                <button className="h-8 w-8 bg-white/90 hover:bg-white rounded-lg flex items-center justify-center transition-colors shadow-sm">
+                  <MoreVertical className="w-4 h-4 text-slate-700" />
+                </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem asChild>
@@ -85,8 +87,11 @@ export default function QuizCard({ quiz, onPlay, onEdit, onDelete, isOwner }) {
                     <BarChart3 className="w-4 h-4 mr-2" /> Analytics
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => onDelete?.(quiz)}
+                <DropdownMenuItem
+                  onClick={() => {
+                    setDropdownOpen(false);
+                    onDelete?.(quiz);
+                  }}
                   className="text-red-600"
                 >
                   <Trash2 className="w-4 h-4 mr-2" /> Delete
@@ -96,19 +101,19 @@ export default function QuizCard({ quiz, onPlay, onEdit, onDelete, isOwner }) {
           </div>
         )}
       </div>
-      
+
       {/* Content */}
       <div className="p-5">
         <h3 className="font-bold text-lg text-slate-800 mb-2 line-clamp-1">
           {quiz.title}
         </h3>
-        
+
         {quiz.description && (
           <p className="text-slate-500 text-sm mb-4 line-clamp-2">
             {quiz.description}
           </p>
         )}
-        
+
         <div className="flex flex-wrap gap-2 mb-4">
           <Badge variant="secondary" className={difficultyColors[quiz.difficulty]}>
             {quiz.difficulty}
@@ -124,8 +129,8 @@ export default function QuizCard({ quiz, onPlay, onEdit, onDelete, isOwner }) {
             </Badge>
           )}
         </div>
-        
-        <Button 
+
+        <Button
           onClick={() => onPlay(quiz)}
           className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 gap-2"
         >
