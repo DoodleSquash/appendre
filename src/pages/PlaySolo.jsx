@@ -21,14 +21,14 @@ export default function PlaySolo() {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [showResult, setShowResult] = useState(false);
   const [user, setUser] = useState(null);
-  
+
   const urlParams = new URLSearchParams(window.location.search);
   const quizId = urlParams.get('quizId');
-  
+
   useEffect(() => {
     loadUser();
   }, []);
-  
+
   const loadUser = async () => {
     try {
       const userData = await getCurrentUser();
@@ -38,7 +38,7 @@ export default function PlaySolo() {
       setUser({ email: 'guest', full_name: 'Guest Player' });
     }
   };
-  
+
   const { data: quiz, isLoading } = useQuery({
     queryKey: ['quiz', quizId],
     queryFn: async () => {
@@ -47,7 +47,7 @@ export default function PlaySolo() {
     },
     enabled: !!quizId
   });
-  
+
   useEffect(() => {
     if (quiz?.questions && gameState === 'playing') {
       const currentQuestion = quiz.questions[currentQuestionIndex];
@@ -57,10 +57,10 @@ export default function PlaySolo() {
       setShowResult(false);
     }
   }, [quiz, currentQuestionIndex, gameState]);
-  
+
   useEffect(() => {
     if (gameState !== 'playing') return;
-    
+
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
@@ -70,10 +70,10 @@ export default function PlaySolo() {
         return prev - 1;
       });
     }, 1000);
-    
+
     return () => clearInterval(timer);
   }, [gameState, currentQuestionIndex]);
-  
+
   const saveResultMutation = useMutation({
     mutationFn: async (resultData) => {
       if (user?.email !== 'guest') {
@@ -81,24 +81,24 @@ export default function PlaySolo() {
       }
     }
   });
-  
+
   const handleAnswer = (answerIndex) => {
     if (showResult) return; // Prevent multiple answers
-    
+
     setSelectedAnswer(answerIndex);
     setShowResult(true);
-    
+
     const currentQuestion = quiz.questions[currentQuestionIndex];
     const responseTime = Date.now() - questionStartTime;
     const isCorrect = answerIndex === currentQuestion.correct_answer;
-    
+
     let pointsEarned = 0;
     if (isCorrect && answerIndex !== null) {
       const timeBonus = Math.floor((timeLeft / currentQuestion.time_limit) * 500);
       pointsEarned = currentQuestion.points + timeBonus;
       setScore(prev => prev + pointsEarned);
     }
-    
+
     const answerRecord = {
       question_index: currentQuestionIndex,
       selected_answer: answerIndex,
@@ -106,10 +106,10 @@ export default function PlaySolo() {
       response_time: responseTime,
       points_earned: pointsEarned
     };
-    
+
     const newAnswers = [...answers, answerRecord];
     setAnswers(newAnswers);
-    
+
     setTimeout(() => {
       if (currentQuestionIndex < quiz.questions.length - 1) {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
@@ -118,14 +118,14 @@ export default function PlaySolo() {
       }
     }, 2000);
   };
-  
+
   const finishGame = (finalAnswers) => {
     setGameState('finished');
-    
+
     const correctCount = finalAnswers.filter(a => a.is_correct).length;
     const accuracy = Math.round((correctCount / quiz.questions.length) * 100);
     const avgResponseTime = finalAnswers.reduce((sum, a) => sum + a.response_time, 0) / finalAnswers.length;
-    
+
     if (accuracy >= 70) {
       confetti({
         particleCount: 100,
@@ -133,7 +133,7 @@ export default function PlaySolo() {
         origin: { y: 0.6 }
       });
     }
-    
+
     if (user?.email !== 'guest') {
       saveResultMutation.mutate({
         session_id: 'solo_' + Date.now(),
@@ -150,7 +150,7 @@ export default function PlaySolo() {
       });
     }
   };
-  
+
   if (isLoading || !quiz || !quiz.questions) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -161,14 +161,14 @@ export default function PlaySolo() {
       </div>
     );
   }
-  
+
   const currentQuestion = quiz.questions[currentQuestionIndex];
   const progress = ((currentQuestionIndex + 1) / quiz.questions.length) * 100;
-  
+
   if (gameState === 'finished') {
     const correctCount = answers.filter(a => a.is_correct).length;
     const accuracy = Math.round((correctCount / quiz.questions.length) * 100);
-    
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-violet-900 to-fuchsia-900 flex items-center justify-center p-6">
         <motion.div
@@ -183,26 +183,26 @@ export default function PlaySolo() {
             <h1 className="text-3xl font-bold text-slate-800 mb-2">Quiz Complete! 🎉</h1>
             <p className="text-slate-600">Great job practicing!</p>
           </div>
-          
+
           <div className="grid grid-cols-2 gap-4 mb-8">
             <div className="bg-gradient-to-br from-violet-50 to-violet-100 rounded-2xl p-6 text-center">
               <Target className="w-8 h-8 text-violet-600 mx-auto mb-2" />
               <p className="text-3xl font-bold text-violet-900">{score}</p>
               <p className="text-slate-600">Total Score</p>
             </div>
-            
+
             <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl p-6 text-center">
               <TrendingUp className="w-8 h-8 text-emerald-600 mx-auto mb-2" />
               <p className="text-3xl font-bold text-emerald-900">{accuracy}%</p>
               <p className="text-slate-600">Accuracy</p>
             </div>
-            
+
             <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 text-center">
               <Award className="w-8 h-8 text-blue-600 mx-auto mb-2" />
               <p className="text-3xl font-bold text-blue-900">{correctCount}/{quiz.questions.length}</p>
               <p className="text-slate-600">Correct</p>
             </div>
-            
+
             <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-2xl p-6 text-center">
               <Clock className="w-8 h-8 text-amber-600 mx-auto mb-2" />
               <p className="text-3xl font-bold text-amber-900">
@@ -211,7 +211,7 @@ export default function PlaySolo() {
               <p className="text-slate-600">Avg. Time</p>
             </div>
           </div>
-          
+
           <div className="flex gap-3">
             <Button
               onClick={() => window.location.reload()}
@@ -231,7 +231,7 @@ export default function PlaySolo() {
       </div>
     );
   }
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-violet-900 to-fuchsia-900">
       {/* Header */}
@@ -245,7 +245,7 @@ export default function PlaySolo() {
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          
+
           <div className="flex-1 mx-6">
             <div className="flex items-center justify-between text-white mb-2">
               <span className="text-sm font-medium">
@@ -255,14 +255,14 @@ export default function PlaySolo() {
             </div>
             <Progress value={progress} className="h-2" />
           </div>
-          
+
           <div className="flex items-center gap-2 text-white">
             <Clock className="w-5 h-5" />
             <span className="text-2xl font-bold tabular-nums">{timeLeft}</span>
           </div>
         </div>
       </div>
-      
+
       {/* Question */}
       <div className="max-w-4xl mx-auto px-6 py-12">
         <AnimatePresence mode="wait">

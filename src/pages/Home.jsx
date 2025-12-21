@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  Play, Users, Sparkles, ArrowRight, Zap, Trophy, 
-  BarChart3, Globe, Rocket, ChevronRight 
+import {
+  Play, Users, Sparkles, ArrowRight, Zap, Trophy,
+  BarChart3, Globe, Rocket, ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,10 +15,10 @@ import { toast } from 'sonner';
 export default function Home() {
   const [gameCode, setGameCode] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  
+
   useEffect(() => {
     checkAuth();
-    
+
     // Check for join code in URL
     const params = new URLSearchParams(window.location.search);
     const joinCode = params.get('join');
@@ -26,7 +26,7 @@ export default function Home() {
       setGameCode(joinCode);
     }
   }, []);
-  
+
   const checkAuth = async () => {
     try {
       const auth = await fetchIsAuthenticated();
@@ -35,7 +35,7 @@ export default function Home() {
       setIsLoggedIn(false);
     }
   };
-  
+
   const handleJoinGame = () => {
     if (gameCode.length !== 6) {
       toast.error('Please enter a valid 6-digit game code');
@@ -43,7 +43,7 @@ export default function Home() {
     }
     window.location.href = createPageUrl(`Play?code=${gameCode}`);
   };
-  
+
   const features = [
     {
       icon: Sparkles,
@@ -66,7 +66,7 @@ export default function Home() {
       description: 'Detailed insights on performance and engagement'
     }
   ];
-  
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Navigation */}
@@ -85,7 +85,7 @@ export default function Home() {
                 <Button variant="ghost" onClick={() => redirectToLogin()}>
                   Sign In
                 </Button>
-                <Button 
+                <Button
                   onClick={() => redirectToLogin()}
                   className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700"
                 >
@@ -96,7 +96,7 @@ export default function Home() {
           </div>
         </div>
       </nav>
-      
+
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-6">
         <div className="max-w-7xl mx-auto">
@@ -110,21 +110,21 @@ export default function Home() {
                 <Sparkles className="w-4 h-4" />
                 AI-Powered Quiz Platform
               </div>
-              
+
               <h1 className="text-5xl md:text-6xl font-black text-slate-900 leading-tight mb-6">
                 Learn, Play,{' '}
                 <span className="bg-gradient-to-r from-violet-600 to-fuchsia-500 bg-clip-text text-transparent">
                   Compete
                 </span>
               </h1>
-              
+
               <p className="text-xl text-slate-600 mb-8 leading-relaxed">
-                Create engaging quizzes with AI, host live game sessions, and compete 
+                Create engaging quizzes with AI, host live game sessions, and compete
                 on real-time leaderboards. Perfect for education, training, and fun!
               </p>
-              
+
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button 
+                <Button
                   size="lg"
                   onClick={() => {
                     if (isLoggedIn) {
@@ -144,7 +144,7 @@ export default function Home() {
                 </Link>
               </div>
             </motion.div>
-            
+
             {/* Join Game Card */}
             <motion.div
               initial={{ opacity: 0, x: 30 }}
@@ -163,7 +163,7 @@ export default function Home() {
                     <p className="text-slate-500">Enter the game PIN to play</p>
                   </div>
                 </div>
-                
+
                 <div className="space-y-4">
                   <Input
                     placeholder="Enter game PIN"
@@ -172,7 +172,7 @@ export default function Home() {
                     className="text-center text-3xl font-bold tracking-[0.5em] h-16 border-2"
                     maxLength={6}
                   />
-                  <Button 
+                  <Button
                     onClick={handleJoinGame}
                     disabled={gameCode.length !== 6}
                     className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 py-6 text-lg font-semibold gap-2"
@@ -180,7 +180,7 @@ export default function Home() {
                     <Users className="w-5 h-5" /> Enter Game
                   </Button>
                 </div>
-                
+
                 <div className="mt-6 pt-6 border-t border-slate-100">
                   <div className="flex items-center justify-between text-sm text-slate-500">
                     <span>No account needed to join</span>
@@ -192,7 +192,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-      
+
       {/* Features Section */}
       <section className="py-20 px-6 bg-white">
         <div className="max-w-7xl mx-auto">
@@ -204,7 +204,7 @@ export default function Home() {
               Everything you need to create, host, and analyze engaging quiz experiences
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
               <motion.div
@@ -224,7 +224,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-      
+
       {/* How It Works Section */}
       <section className="py-20 px-6 bg-gradient-to-r from-violet-600 to-fuchsia-600">
         <div className="max-w-7xl mx-auto">
@@ -236,24 +236,24 @@ export default function Home() {
               Create, host, and compete in minutes
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { 
-                step: '1', 
-                icon: '✨', 
+              {
+                step: '1',
+                icon: '✨',
                 title: 'Create Your Quiz',
                 description: 'Use AI to generate quizzes instantly or build custom ones from scratch'
               },
-              { 
-                step: '2', 
-                icon: '🎮', 
+              {
+                step: '2',
+                icon: '🎮',
                 title: 'Share Game Code',
                 description: 'Get a unique 6-digit code and share it with your players'
               },
-              { 
-                step: '3', 
-                icon: '🏆', 
+              {
+                step: '3',
+                icon: '🏆',
                 title: 'Play & Compete',
                 description: 'Watch live results and crown the champion on the leaderboard'
               }
@@ -276,7 +276,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-      
+
       {/* CTA Section */}
       <section className="py-20 px-6">
         <div className="max-w-4xl mx-auto text-center">
@@ -286,7 +286,7 @@ export default function Home() {
           <p className="text-xl text-slate-600 mb-8">
             Join thousands of educators and learners using Apprendre
           </p>
-          <Button 
+          <Button
             size="lg"
             onClick={() => redirectToLogin(createPageUrl('Dashboard'))}
             className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-lg px-12 py-6"
@@ -295,7 +295,7 @@ export default function Home() {
           </Button>
         </div>
       </section>
-      
+
       {/* Footer */}
       <footer className="py-8 px-6 border-t border-slate-100">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">

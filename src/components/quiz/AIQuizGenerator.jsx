@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import { Label } from '@/components/ui/label';
 import { generateQuizWithAI } from '@/lib/api/quizApi';
 import { toast } from 'sonner';
@@ -106,86 +106,106 @@ export default function AIQuizGenerator({ onQuizGenerated }) {
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-        <TabsList className="grid grid-cols-3 w-full">
-          <TabsTrigger value="topic">
-            Topic
-          </TabsTrigger>
-          <TabsTrigger value="text">
-            Text
-          </TabsTrigger>
-          <TabsTrigger value="pdf">
-            PDF
-          </TabsTrigger>
-        </TabsList>
+      {/* Toggle Bar (Segmented Control) */}
+      <div className="bg-slate-100 p-1 rounded-xl flex mb-6">
+        <button
+          onClick={() => setActiveTab('topic')}
+          className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${activeTab === 'topic'
+            ? 'bg-white text-slate-900 shadow-sm'
+            : 'text-slate-500 hover:text-slate-700'
+            }`}
+        >
+          <Zap className="w-4 h-4" />
+          Topic
+        </button>
+        <button
+          onClick={() => setActiveTab('text')}
+          className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${activeTab === 'text'
+            ? 'bg-white text-slate-900 shadow-sm'
+            : 'text-slate-500 hover:text-slate-700'
+            }`}
+        >
+          <FileText className="w-4 h-4" />
+          Text
+        </button>
+        <button
+          onClick={() => setActiveTab('pdf')}
+          className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${activeTab === 'pdf'
+            ? 'bg-white text-slate-900 shadow-sm'
+            : 'text-slate-500 hover:text-slate-700'
+            }`}
+        >
+          <Upload className="w-4 h-4" />
+          PDF
+        </button>
+      </div>
 
-        <div className="mt-6">
-          <TabsContent value="topic" className="m-0">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="topic">Enter a topic</Label>
-                <Input
-                  id="topic"
-                  placeholder="e.g., World War II, JavaScript basics, Solar System..."
-                  value={topic}
-                  onChange={(e) => setTopic(e.target.value)}
-                  className="mt-2"
+      <div className="mt-6">
+        {activeTab === 'topic' && (
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="topic">Enter a topic</Label>
+              <Input
+                id="topic"
+                placeholder="e.g., World War II, JavaScript basics, Solar System..."
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                className="mt-2"
+              />
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'text' && (
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="text">Paste your content</Label>
+              <Textarea
+                id="text"
+                placeholder="Paste any text, article, or notes here..."
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                className="mt-2 min-h-[200px]"
+              />
+              <p className="text-sm text-slate-500 mt-1">
+                {text.length} characters (minimum 50)
+              </p>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'pdf' && (
+          <div className="space-y-4">
+            <div>
+              <Label>Upload a PDF or Image</Label>
+              <div className="mt-2 border-2 border-dashed border-slate-200 rounded-xl p-8 text-center hover:border-violet-400 transition-colors">
+                <input
+                  type="file"
+                  accept=".pdf,.png,.jpg,.jpeg"
+                  onChange={handleFileChange}
+                  className="hidden"
+                  id="file-upload"
                 />
+                <label htmlFor="file-upload" className="cursor-pointer">
+                  <BookOpen className="w-12 h-12 text-slate-400 mx-auto mb-3" />
+                  {file ? (
+                    <p className="text-violet-600 font-medium">{file.name}</p>
+                  ) : (
+                    <>
+                      <p className="text-slate-600 font-medium">
+                        Click to upload or drag and drop
+                      </p>
+                      <p className="text-sm text-slate-400 mt-1">
+                        PDF, PNG, or JPG (max 10MB)
+                      </p>
+                    </>
+                  )}
+                </label>
               </div>
             </div>
-          </TabsContent>
-
-          <TabsContent value="text" className="m-0">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="text">Paste your content</Label>
-                <Textarea
-                  id="text"
-                  placeholder="Paste any text, article, or notes here..."
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  className="mt-2 min-h-[200px]"
-                />
-                <p className="text-sm text-slate-500 mt-1">
-                  {text.length} characters (minimum 50)
-                </p>
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="pdf" className="m-0">
-            <div className="space-y-4">
-              <div>
-                <Label>Upload a PDF or Image</Label>
-                <div className="mt-2 border-2 border-dashed border-slate-200 rounded-xl p-8 text-center hover:border-violet-400 transition-colors">
-                  <input
-                    type="file"
-                    accept=".pdf,.png,.jpg,.jpeg"
-                    onChange={handleFileChange}
-                    className="hidden"
-                    id="file-upload"
-                  />
-                  <label htmlFor="file-upload" className="cursor-pointer">
-                    <BookOpen className="w-12 h-12 text-slate-400 mx-auto mb-3" />
-                    {file ? (
-                      <p className="text-violet-600 font-medium">{file.name}</p>
-                    ) : (
-                      <>
-                        <p className="text-slate-600 font-medium">
-                          Click to upload or drag and drop
-                        </p>
-                        <p className="text-sm text-slate-400 mt-1">
-                          PDF, PNG, or JPG (max 10MB)
-                        </p>
-                      </>
-                    )}
-                  </label>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-        </div>
-      </Tabs>
+          </div>
+        )}
+      </div>
 
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div>

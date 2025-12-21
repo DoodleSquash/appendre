@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import { getQuizById, createQuiz, updateQuiz } from '@/services/quizService';
 import { generateQuizWithAI } from '@/lib/api/quizApi';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -211,21 +211,37 @@ export default function CreateQuiz() {
       </header>
 
       <main className="max-w-5xl mx-auto px-6 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2 mb-8">
-            <TabsTrigger value="ai">
-              AI Generator
-            </TabsTrigger>
-            <TabsTrigger value="manual">
-              Manual Editor
-            </TabsTrigger>
-          </TabsList>
+        {/* Toggle Bar (Segmented Control) */}
+        <div className="bg-slate-100 p-1 rounded-xl flex mb-8">
+          <button
+            onClick={() => setActiveTab('ai')}
+            className={`flex-1 py-3 px-6 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${activeTab === 'ai'
+              ? 'bg-white text-slate-900 shadow-sm'
+              : 'text-slate-500 hover:text-slate-700'
+              }`}
+          >
+            <Sparkles className="w-4 h-4" />
+            AI Generator
+          </button>
+          <button
+            onClick={() => setActiveTab('manual')}
+            className={`flex-1 py-3 px-6 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${activeTab === 'manual'
+              ? 'bg-white text-slate-900 shadow-sm'
+              : 'text-slate-500 hover:text-slate-700'
+              }`}
+          >
+            <Plus className="w-4 h-4" />
+            Manual Editor
+          </button>
+        </div>
 
-          <TabsContent value="ai" className="m-0">
-            <AIQuizGenerator onQuizGenerated={handleAIGenerated} />
-          </TabsContent>
+        {/* Content Section */}
+        {activeTab === 'ai' && (
+          <AIQuizGenerator onQuizGenerated={handleAIGenerated} />
+        )}
 
-          <TabsContent value="manual" className="m-0">
+        {activeTab === 'manual' && (
+          <>
             {/* Quiz Details */}
             <motion.div
               className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-6"
@@ -496,9 +512,9 @@ export default function CreateQuiz() {
                 </div>
               )}
             </div>
-          </TabsContent>
-        </Tabs>
+          </>
+        )}
       </main>
-    </div>
+    </div >
   );
 }

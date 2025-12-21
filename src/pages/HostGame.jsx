@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  ArrowRight, Users, Crown, Clock, XCircle, 
-  CheckCircle, Loader2, SkipForward, ArrowLeft 
+import {
+  ArrowRight, Users, Crown, Clock, XCircle,
+  CheckCircle, Loader2, SkipForward, ArrowLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getCurrentUser, redirectToLogin } from '@/lib/api/userApi';
@@ -26,10 +26,10 @@ export default function HostGame() {
   const [timeLeft, setTimeLeft] = useState(0);
   const [showResults, setShowResults] = useState(false);
   const queryClient = useQueryClient();
-  
+
   const urlParams = new URLSearchParams(window.location.search);
   const quizId = urlParams.get('quizId');
-  
+
   const { data: quiz, isLoading: loadingQuiz } = useQuery({
     queryKey: ['quiz', quizId],
     queryFn: async () => {
@@ -38,11 +38,11 @@ export default function HostGame() {
     },
     enabled: !!quizId
   });
-  
+
   useEffect(() => {
     loadUser();
   }, []);
-  
+
   const loadUser = async () => {
     try {
       const userData = await getCurrentUser();
@@ -51,7 +51,7 @@ export default function HostGame() {
       redirectToLogin();
     }
   };
-  
+
   // Create game session
   const createSession = useMutation({
     mutationFn: async () => {
@@ -70,25 +70,25 @@ export default function HostGame() {
       setSession(data);
     }
   });
-  
+
   // Poll for player updates
   useEffect(() => {
     if (!session?.id) return;
-    
+
     const pollPlayers = setInterval(async () => {
       const updatedSession = await fetchGameSession(session.id);
       if (updatedSession) {
         setSession(updatedSession);
       }
     }, 2000);
-    
+
     return () => clearInterval(pollPlayers);
   }, [session?.id]);
-  
+
   // Timer logic
   useEffect(() => {
     if (session?.status !== 'question' || timeLeft <= 0) return;
-    
+
     const timer = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) {
@@ -98,62 +98,62 @@ export default function HostGame() {
         return prev - 1;
       });
     }, 1000);
-    
+
     return () => clearInterval(timer);
   }, [session?.status, timeLeft]);
-  
+
   useEffect(() => {
     if (quiz && user && !session) {
       createSession.mutate();
     }
   }, [quiz, user]);
-  
+
   const handleTimeUp = useCallback(async () => {
     if (!session) return;
-    
+
     await updateGameSession(session.id, {
       status: 'results'
     });
-    
+
     setShowResults(true);
     setSession(prev => ({ ...prev, status: 'results' }));
   }, [session]);
-  
+
   const startGame = async () => {
     if (!session || !quiz) return;
-    
+
     const firstQuestion = quiz.questions[0];
     setTimeLeft(firstQuestion?.time_limit || 20);
     setShowResults(false);
-    
+
     await updateGameSession(session.id, {
       status: 'question',
       current_question_index: 0,
       question_start_time: new Date().toISOString()
     });
-    
+
     // Update play count
     await updateQuiz(quizId, {
       play_count: (quiz.play_count || 0) + 1
     });
-    
+
     setSession(prev => ({ ...prev, status: 'question', current_question_index: 0 }));
   };
-  
+
   const nextQuestion = async () => {
     if (!session || !quiz) return;
-    
+
     const nextIndex = session.current_question_index + 1;
-    
+
     if (nextIndex >= quiz.questions.length) {
       // Game finished
       await updateGameSession(session.id, {
         status: 'finished'
       });
-      
+
       // Save results for all players
       const sortedPlayers = [...(session.players || [])].sort((a, b) => (b.score || 0) - (a.score || 0));
-      
+
       for (let i = 0; i < sortedPlayers.length; i++) {
         const player = sortedPlayers[i];
         await saveQuizResult(quizId, {
@@ -169,33 +169,33 @@ export default function HostGame() {
           answers: player.answers || []
         });
       }
-      
+
       setSession(prev => ({ ...prev, status: 'finished' }));
     } else {
       const nextQ = quiz.questions[nextIndex];
       setTimeLeft(nextQ?.time_limit || 20);
       setShowResults(false);
-      
+
       await updateGameSession(session.id, {
         status: 'question',
         current_question_index: nextIndex,
         question_start_time: new Date().toISOString()
       });
-      
+
       setSession(prev => ({ ...prev, status: 'question', current_question_index: nextIndex }));
     }
   };
-  
+
   const endGame = async () => {
     if (!session) return;
-    
+
     await updateGameSession(session.id, {
       status: 'finished'
     });
-    
+
     window.location.href = createPageUrl('Dashboard');
   };
-  
+
   if (loadingQuiz || !quiz || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-600">
@@ -203,7 +203,7 @@ export default function HostGame() {
       </div>
     );
   }
-  
+
   // Waiting for players
   if (session?.status === 'waiting') {
     return (
@@ -216,11 +216,11 @@ export default function HostGame() {
       />
     );
   }
-  
+
   // Question phase
   if (session?.status === 'question' || session?.status === 'results') {
     const currentQuestion = quiz.questions[session.current_question_index];
-    
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-violet-900 to-fuchsia-900 p-6">
         <div className="max-w-6xl mx-auto">
@@ -241,13 +241,13 @@ export default function HostGame() {
               </div>
               <h1 className="text-xl font-bold text-white hidden md:block">{quiz.title}</h1>
             </div>
-            
+
             <div className="flex items-center gap-3">
               <div className="bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 text-white flex items-center gap-2">
                 <Users className="w-4 h-4" />
                 <span className="font-bold">{session.players?.length || 0}</span>
               </div>
-              
+
               {showResults && (
                 <Button
                   onClick={nextQuestion}
@@ -260,7 +260,7 @@ export default function HostGame() {
                   )}
                 </Button>
               )}
-              
+
               {!showResults && (
                 <Button
                   variant="outline"
@@ -272,7 +272,7 @@ export default function HostGame() {
               )}
             </div>
           </div>
-          
+
           {/* Question or Leaderboard */}
           <AnimatePresence mode="wait">
             {showResults ? (
@@ -282,8 +282,8 @@ export default function HostGame() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
               >
-                <Leaderboard 
-                  players={session.players || []} 
+                <Leaderboard
+                  players={session.players || []}
                   currentUserEmail={user.email}
                 />
               </motion.div>
@@ -297,13 +297,13 @@ export default function HostGame() {
                 <QuestionCard
                   question={currentQuestion}
                   selectedAnswer={null}
-                  onSelectAnswer={() => {}}
+                  onSelectAnswer={() => { }}
                   showResult={false}
                   disabled={true}
                   timeLeft={timeLeft}
                   totalTime={currentQuestion?.time_limit || 20}
                 />
-                
+
                 {/* Live answer tracking */}
                 <div className="mt-8 bg-white/10 backdrop-blur-sm rounded-2xl p-6">
                   <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
@@ -314,7 +314,7 @@ export default function HostGame() {
                       const answerCount = session.players?.filter(
                         p => p.answers?.[session.current_question_index]?.selected_answer === index
                       ).length || 0;
-                      
+
                       return (
                         <div key={index} className="bg-white/5 rounded-xl p-4 text-center">
                           <p className="text-3xl font-bold text-white">{answerCount}</p>
@@ -331,15 +331,15 @@ export default function HostGame() {
       </div>
     );
   }
-  
+
   // Game finished
   if (session?.status === 'finished') {
     const sortedPlayers = [...(session.players || [])].sort((a, b) => (b.score || 0) - (a.score || 0));
     const winner = sortedPlayers[0];
-    
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-600 flex flex-col items-center justify-center p-6">
-        <motion.div 
+        <motion.div
           className="text-center mb-8"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -353,12 +353,12 @@ export default function HostGame() {
             </p>
           )}
         </motion.div>
-        
-        <Leaderboard 
-          players={session.players || []} 
+
+        <Leaderboard
+          players={session.players || []}
           currentUserEmail={user.email}
         />
-        
+
         <div className="flex gap-4 mt-8">
           <Button
             variant="outline"
@@ -379,6 +379,6 @@ export default function HostGame() {
       </div>
     );
   }
-  
+
   return null;
 }
