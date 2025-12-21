@@ -1,10 +1,12 @@
 /**
  * Create a page URL for navigation
  */
-export function createPageUrl(path) {
+export function createPageUrl(pathWithQuery) {
+  const [path, query] = pathWithQuery.split('?');
+
   // Special case: Home maps to root path
   if (path === 'Home') {
-    return '/';
+    return query ? `/?${query}` : '/';
   }
 
   // Convert PascalCase page names to lowercase routes
@@ -14,7 +16,7 @@ export function createPageUrl(path) {
     .toLowerCase()
     .replace(/^-/, '');
 
-  return `/${routePath}`;
+  return query ? `/${routePath}?${query}` : `/${routePath}`;
 }
 
 /**

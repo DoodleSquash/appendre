@@ -8,8 +8,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { fetchQuizById } from '@/lib/api/quizApi';
 import { fetchQuizResults } from '@/lib/api/quizResultApi';
+import { getQuizById } from '@/services/quizService';
 import { useQuery } from '@tanstack/react-query';
 import { createPageUrl } from '@/utils';
 import {
@@ -23,15 +23,12 @@ const COLORS = ['#8b5cf6', '#d946ef', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'
 
 export default function Analytics() {
   const urlParams = new URLSearchParams(window.location.search);
-  const quizId = urlParams.get('quizId');
+  const quizId = urlParams.get('quizId') || urlParams.get('quiz-id');
   const [activeTab, setActiveTab] = useState('overview');
 
   const { data: quiz, isLoading: loadingQuiz } = useQuery({
     queryKey: ['quiz', quizId],
-    queryFn: async () => {
-      const quiz = await fetchQuizById(quizId);
-      return quiz;
-    },
+    queryFn: () => getQuizById(quizId),
     enabled: !!quizId
   });
 
@@ -191,7 +188,7 @@ export default function Analytics() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-64">
+                  <div className="h-64 w-full min-h-[256px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <RechartsPie>
                         <Pie
@@ -227,7 +224,7 @@ export default function Analytics() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-64">
+                  <div className="h-64 w-full min-h-[256px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={dailyPlaysData}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -273,7 +270,7 @@ export default function Analytics() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-80">
+                <div className="h-80 w-full min-h-[320px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={questionPerformance}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
